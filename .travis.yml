@@ -3,7 +3,7 @@ python:
   - "3.6"
 cache: pip
 install:
-  - pip install -e git+https://github.com/AdamSpannbauer/python_video_stab.git#egg=vidstab[cv2]
+  - pip install -e git+https://github.com/RobRoseKnows/python_video_stab.git#egg=vidstab[cv2]
 script:
   - python setup.py test
 

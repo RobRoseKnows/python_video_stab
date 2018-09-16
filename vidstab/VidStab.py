@@ -6,9 +6,9 @@ except ModuleNotFoundError:
     print("""
     No python bindings for OpenCV found when attempting to `import cv2`.
     If you have not installed OpenCV you can install with:
-        
+
         pip install vidstab[cv2]
-        
+
     If you'd prefer to install OpenCV from source you can see the docs here:
         https://docs.opencv.org/3.4.1/da/df6/tutorial_py_table_of_contents_setup.html
     """)
@@ -19,8 +19,7 @@ from collections import deque
 import numpy as np
 import imutils
 import imutils.feature.factories as kp_factory
-import matplotlib.pyplot as plt
-from .utils import bfill_rolling_mean, init_progress_bar
+from .utils import bfill_rolling_mean
 
 
 class VidStab:
@@ -143,7 +142,6 @@ class VidStab:
             message = 'Generating Transforms'
         else:
             message = 'Stabilizing'
-        bar = init_progress_bar(frame_count, max_frames, show_progress, message)
 
         # read first frame
         grabbed_frame, prev_frame = self.vid_cap.read()
@@ -163,12 +161,14 @@ class VidStab:
         # iterate through frames count
         grabbed_frame = True
 
+        show_progress = False
+
         while grabbed_frame:
             # read current frame
             grabbed_frame, cur_frame = self.vid_cap.read()
             if not grabbed_frame:
-                if show_progress and bar is not None:
-                    bar.next()
+                if show_progress:
+                    pass
                 break
 
             self.frame_queue.append(cur_frame)
@@ -183,12 +183,11 @@ class VidStab:
                         self.frame_queue_inds[-1] >= smoothing_window - 1):
                     break
 
-            if show_progress and bar is not None:
-                bar.next()
+            if show_progress:
+                pass
 
         self._gen_transforms(smoothing_window)
-
-        return bar
+        return None
 
     def _init_writer(self, output_path, frame_shape, output_fourcc, fps):
         # set output and working dims
@@ -375,101 +374,11 @@ class VidStab:
 
         if not use_stored_transforms:
             bar = self._init_trajectory(smoothing_window, max_frames, show_progress=show_progress)
-        else:
-            bar = init_progress_bar(frame_count, max_frames, show_progress)
 
         self._apply_transforms(output_path, max_frames, smoothing_window,
                                border_type=border_type, border_size=border_size, layer_func=layer_func,
-                               playback=playback, output_fourcc=output_fourcc, progress_bar=bar)
+                               playback=playback, output_fourcc=output_fourcc)
 
         cv2.destroyAllWindows()
 
         return
-
-    def plot_trajectory(self):
-        """Plot video trajectory
-
-        Create a plot of the video's trajectory & smoothed trajectory.
-        Separate subplots are used to show the x and y trajectory.
-
-        :return: tuple of matplotlib objects ``(Figure, (AxesSubplot, AxesSubplot))``
-
-        >>> from vidstab import VidStab
-        >>> import matplotlib.pyplot as plt
-        >>> stabilizer = VidStab()
-        >>> stabilizer.gen_transforms(input_path='input_video.mov')
-        >>> stabilizer.plot_trajectory()
-        >>> plt.show()
-
-        """
-
-        if self.transforms is None:
-            raise AttributeError('No trajectory to plot. '
-                                 'Use methods: gen_transforms or stabilize to generate the trajectory attributes')
-
-        with plt.style.context('ggplot'):
-            fig, (ax1, ax2) = plt.subplots(2, sharex='all')
-
-            # x trajectory
-            ax1.plot(self.trajectory[:, 0], label='Trajectory')
-            ax1.plot(self.smoothed_trajectory[:, 0], label='Smoothed Trajectory')
-            ax1.set_ylabel('dx')
-
-            # y trajectory
-            ax2.plot(self.trajectory[:, 1], label='Trajectory')
-            ax2.plot(self.smoothed_trajectory[:, 1], label='Smoothed Trajectory')
-            ax2.set_ylabel('dy')
-
-            handles, labels = ax2.get_legend_handles_labels()
-            fig.legend(handles, labels, loc='upper right')
-
-            plt.xlabel('Frame Number')
-
-            fig.suptitle('Video Trajectory', x=0.15, y=0.96, ha='left')
-            fig.canvas.set_window_title('Trajectory')
-
-            return fig, (ax1, ax2)
-
-    def plot_transforms(self):
-        """Plot stabilizing transforms
-
-        Create a plot of the transforms used to stabilize the input video.
-        Plots x & y transforms (dx & dy) in a separate subplot than angle transforms (da).
-
-        :return: tuple of matplotlib objects ``(Figure, (AxesSubplot, AxesSubplot))``
-
-        >>> from vidstab import VidStab
-        >>> import matplotlib.pyplot as plt
-        >>> stabilizer = VidStab()
-        >>> stabilizer.gen_transforms(input_path='input_video.mov')
-        >>> stabilizer.plot_transforms()
-        >>> plt.show()
-
-        """
-        if self.transforms is None:
-            raise AttributeError('No transforms to plot. '
-                                 'Use methods: gen_transforms or stabilize to generate the transforms attribute')
-
-        with plt.style.context('ggplot'):
-            fig, (ax1, ax2) = plt.subplots(2, sharex='all')
-
-            ax1.plot(self.transforms[:, 0], label='delta x', color='C0')
-            ax1.plot(self.transforms[:, 1], label='delta y', color='C1')
-            ax1.set_ylabel('Delta Pixels', fontsize=10)
-
-            ax2.plot(self.transforms[:, 2], label='delta angle', color='C2')
-            ax2.set_ylabel('Delta Degrees', fontsize=10)
-
-            handles1, labels1 = ax1.get_legend_handles_labels()
-            handles2, labels2 = ax2.get_legend_handles_labels()
-            fig.legend(handles1 + handles2,
-                       labels1 + labels2,
-                       loc='upper right',
-                       ncol=1)
-
-            plt.xlabel('Frame Number')
-
-            fig.suptitle('Transformations for Stabilizing', x=0.15, y=0.96, ha='left')
-            fig.canvas.set_window_title('Transforms')
-
-            return fig, (ax1, ax2)

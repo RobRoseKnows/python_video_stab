@@ -13,16 +13,13 @@ setup(name='vidstab',
       long_description=long_description,
       long_description_content_type='text/markdown',
       author='Adam Spannbauer',
-      author_email='spannbaueradam@gmail.com',
-      url='https://github.com/AdamSpannbauer/python_video_stab',
+      author_email='RobRoseKnows+Git@gmail.com',
+      url='https://github.com/RobRoseKnows/python_video_stab',
       packages=['vidstab'],
       license='MIT',
       install_requires=[
           'numpy',
-          'pandas',
-          'imutils',
-          'progress',
-          'matplotlib',
+          'imutils'
       ],
       extras_require={
         'cv2':  ['opencv-contrib-python >= 3.4.0']

@@ -16,22 +16,6 @@ class UtilTests(unittest.TestCase):
             utils.bfill_rolling_mean(test_arr, n=3)
         self.assertTrue(isinstance(err.exception, ValueError), 'reject when n > arr.shape[0]')
 
-    def test_init_progress_bar(self):
-        bar = utils.init_progress_bar(100, float('inf'), show_progress=True, message='Stabilizing')
-        self.assertEqual(bar.suffix, '%(percent)d%%')
-        self.assertEqual(bar.max, 100)
-        self.assertEqual(bar.message, 'Stabilizing')
-
-        bar = utils.init_progress_bar(100, 50, show_progress=True, message='Test')
-        self.assertEqual(bar.max, 50)
-        self.assertEqual(bar.message, 'Test')
-
-        bar = utils.init_progress_bar(100, 50, show_progress=False, message='Stabilizing')
-        self.assertEqual(bar, None)
-
-        bar = utils.init_progress_bar(-1, float('inf'), show_progress=True, message='Stabilizing')
-        self.assertEqual(bar, None)
-
 
 if __name__ == '__main__':
     unittest.main()

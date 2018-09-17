@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='vidstab',
-      version=version['__version__'],
+      version='0.2.0',
       description='Video Stabilization using OpenCV',
       author='Adam Spannbauer',
       author_email='RobRoseKnows+Git@gmail.com',

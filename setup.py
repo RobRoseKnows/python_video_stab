@@ -10,7 +10,8 @@ setup(name='vidstab',
       license='MIT',
       install_requires=[
           'numpy',
-          'imutils'
+          'imutils',
+          'opencv-contrib-python'
       ],
       extras_require={
         'cv2':  ['opencv-contrib-python >= 3.4.0']
